@@ -75,6 +75,10 @@ def clean_env(monkeypatch, tmp_path):
         "CONTRACT_ADDRESS",
         "SECUREFLOW_DEPLOYMENT_FILE",
         "SECUREFLOW_ENCRYPTION_KEY",
+        "SECUREFLOW_API_KEYS",
+        "SECUREFLOW_DB",
+        "SECUREFLOW_INDEX_CONFIRMATIONS",
+        "SECUREFLOW_INDEX_CHUNK",
     ):
         monkeypatch.delenv(var, raising=False)
     return monkeypatch

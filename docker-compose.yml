@@ -1,10 +1,13 @@
 # Full stack: local chain -> contract deployment -> API.
 #
 #   docker compose up --build
-#   python -m secureflow.demo --url http://localhost:8000
+#   python -m secureflow.demo --url http://localhost:8000 --api-key sf_demo_do_not_use_in_production
 #
-# The private key below is Anvil's well-known dev account #0. It is public,
-# it only exists on this throwaway local chain, and must never hold real funds.
+# Every secret in this file is a public demo value:
+# - ETH_PRIVATE_KEY is Anvil's well-known dev account #0 (only exists on this throwaway chain)
+# - the API key hash below is sha256("sf_demo_do_not_use_in_production")
+# - the encryption key is a fixed demo key
+# Never reuse any of them outside local development.
 
 x-chain-env: &chain-env
   ETH_RPC_URL: http://chain:8545
@@ -38,10 +41,14 @@ services:
     environment:
       <<: *chain-env
       SECUREFLOW_BACKEND: web3
-      # Demo-only key. Generate your own with: python -m secureflow.crypto
+      # Demo-only keys. Generate your own with `python -m secureflow.auth` / `python -m secureflow.crypto`.
+      SECUREFLOW_API_KEYS: "demo:ab939ac3fd4a5c3212da648b7c1fa34477a7d989a003face961dbc05ae792f58"
       SECUREFLOW_ENCRYPTION_KEY: "ZGVtby1vbmx5LWtleS1kby1ub3QtdXNlLWluLXByb2Q="
+      # The index and idempotency records survive API restarts.
+      SECUREFLOW_DB: /data/secureflow.db
     volumes:
       - deployments:/deployments:ro
+      - data:/data
     ports:
       - "8000:8000"
     depends_on:
@@ -55,3 +62,4 @@ services:
 
 volumes:
   deployments:
+  data:

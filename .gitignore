@@ -5,6 +5,11 @@
 *.pem
 *.key
 
+# --- Local SQLite index / idempotency store ---
+*.db
+*.db-wal
+*.db-shm
+
 # --- Local deployment records (addresses on your own chains) ---
 deployments/
 contracts/contract_address.json
@@ -27,6 +32,8 @@ output.txt
 
 # --- Caches / editors / OS ---
 .pytest_cache/
+.coverage
+htmlcov/
 .mypy_cache/
 .ruff_cache/
 .vscode/

@@ -10,7 +10,7 @@ COPY pyproject.toml README.md ./
 COPY secureflow ./secureflow
 RUN pip install .
 
-RUN useradd --create-home --uid 1000 secureflow && mkdir -p /deployments && chown secureflow /deployments
+RUN useradd --create-home --uid 1000 secureflow && mkdir -p /deployments /data && chown secureflow /deployments /data
 USER secureflow
 
 EXPOSE 8000

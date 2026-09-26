@@ -6,6 +6,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from secureflow.api import create_app
+from secureflow.db import Database
+from secureflow.deploy import deploy
+from secureflow.index import AttestationIndex
 from secureflow.ledger import (
     AlreadyRevoked,
     AttestationNotFound,
@@ -67,25 +70,59 @@ def test_get_unknown_raises(web3_ledger):
         web3_ledger.get("0x" + "00" * 32)
 
 
-def test_list_filters_by_issuer(deployed, web3_ledger):
+def test_events_cover_both_kinds_in_chain_order(deployed, web3_ledger):
+    uid = web3_ledger.create(RECIPIENT, "x").uid
+    web3_ledger.revoke(uid)
+    events = web3_ledger.events(web3_ledger.start_block(), web3_ledger.latest_block())
+    assert [(e.kind, e.uid) for e in events] == [("created", uid), ("revoked", uid)]
+    assert events[0].recipient == RECIPIENT
+    assert events[0].timestamp > 0
+
+
+def test_index_over_real_chain_filters_by_issuer(deployed, web3_ledger):
     w3, keys, deployment = deployed
     other = Web3Ledger(private_key=keys[1], contract_address=deployment["address"], w3=w3)
     mine = web3_ledger.create(RECIPIENT, "mine").uid
     other.create(RECIPIENT, "theirs")
+    index = AttestationIndex(Database(), web3_ledger, chunk_size=1)  # chunk of 1 block forces many getLogs calls
     issuer = web3_ledger.info().issuer
-    assert [a.uid for a in web3_ledger.list(issuer=issuer)] == [mine]
-    assert len(web3_ledger.list()) == 2
+    assert [a.uid for a in index.query(now=0, issuer=issuer).items] == [mine]
+    assert len(index.query(now=0).items) == 2
+
+
+def test_contract_expiry_with_time_travel(chain):
+    """Expiry is enforced by the contract's own clock, not just by the API."""
+    w3, keys, tester = chain
+    deployment = deploy(w3, keys[0])
+    ledger = Web3Ledger(private_key=keys[0], contract_address=deployment["address"], w3=w3)
+    contract = ledger._ready()
+    now = w3.eth.get_block("latest")["timestamp"]
+
+    uid = ledger.create(RECIPIENT, "short-lived", expires_at=now + 100).uid
+    assert contract.functions.isValid(bytes.fromhex(uid[2:])).call() is True
+    assert ledger.get(uid).expires_at == now + 100
+
+    tester.time_travel(now + 200)
+    assert contract.functions.isValid(bytes.fromhex(uid[2:])).call() is False
+    assert ledger.get(uid).is_valid(now + 200) is False
+
+
+def test_contract_rejects_expiry_in_past(web3_ledger):
+    from secureflow.ledger import InvalidInput
+
+    with pytest.raises(InvalidInput, match="future"):
+        web3_ledger.create(RECIPIENT, "x", expires_at=1)
 
 
 def test_missing_contract_is_unavailable(chain):
-    w3, keys = chain
+    w3, keys, _ = chain
     ledger = Web3Ledger(private_key=keys[0], contract_address="0x" + "12" * 20, w3=w3)
     with pytest.raises(LedgerUnavailable):
         ledger.info()
 
 
 def test_unreachable_node_is_503(chain):
-    _, keys = chain
+    _, keys, _ = chain
     ledger = Web3Ledger(private_key=keys[0], contract_address="0x" + "12" * 20, rpc_url="http://127.0.0.1:1")
     with TestClient(create_app(ledger=ledger)) as client:
         response = client.get("/health")
@@ -110,3 +147,20 @@ def test_contract_rejects_zero_recipient(web3_ledger):
 
     with pytest.raises(InvalidInput, match="zero address"):
         web3_ledger.create("0x" + "00" * 20, "x")
+
+
+def test_resolve_create_by_tx_hash(web3_ledger):
+    tx = web3_ledger.create(RECIPIENT, "find me")
+    assert web3_ledger.resolve_create(tx.tx_hash) == tx
+    assert web3_ledger.resolve_create("0x" + "12" * 32) is None  # never broadcast
+
+
+def test_on_submitted_reports_the_hash_that_gets_mined(web3_ledger):
+    seen = []
+    tx = web3_ledger.create(RECIPIENT, "x", on_submitted=seen.append)
+    assert seen == [tx.tx_hash]
+
+
+def test_anchor_is_the_deployment_block_hash(deployed, web3_ledger):
+    w3, _, deployment = deployed
+    assert web3_ledger.anchor() == "0x" + w3.eth.get_block(deployment["block_number"])["hash"].hex().removeprefix("0x")

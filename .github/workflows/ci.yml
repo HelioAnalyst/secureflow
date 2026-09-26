@@ -20,6 +20,7 @@ jobs:
       - run: pip install -e ".[dev]"
       - run: ruff check .
       - run: ruff format --check .
+      - run: mypy
       - run: pytest
 
   docker:
@@ -31,7 +32,7 @@ jobs:
       - name: Run the demo against the stack
         run: |
           pip install httpx
-          PYTHONPATH=. python -m secureflow.demo --url http://localhost:8000
+          PYTHONPATH=. python -m secureflow.demo --url http://localhost:8000 --api-key sf_demo_do_not_use_in_production
       - name: Logs on failure
         if: failure()
         run: docker compose logs

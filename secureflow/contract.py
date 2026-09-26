@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from functools import lru_cache
 from importlib import resources
+from typing import Any, cast
 
 from eth_utils import keccak
 
@@ -12,17 +13,17 @@ CONTRACT_NAME = "AttestationRegistry"
 
 
 @lru_cache(maxsize=1)
-def artifact() -> dict:
+def artifact() -> dict[str, Any]:
     text = resources.files("secureflow").joinpath(f"{CONTRACT_NAME}.json").read_text(encoding="utf-8")
-    return json.loads(text)
+    return cast(dict[str, Any], json.loads(text))
 
 
-def abi() -> list[dict]:
-    return artifact()["abi"]
+def abi() -> list[dict[str, Any]]:
+    return cast(list[dict[str, Any]], artifact()["abi"])
 
 
 def bytecode() -> str:
-    return artifact()["bytecode"]
+    return str(artifact()["bytecode"])
 
 
 @lru_cache(maxsize=1)
