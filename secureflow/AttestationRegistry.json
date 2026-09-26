@@ -1,0 +1,230 @@
+{
+  "contractName": "AttestationRegistry",
+  "compiler": {
+    "solc": "0.8.28",
+    "evmVersion": "paris",
+    "optimizerRuns": 200
+  },
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "uid",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AlreadyRevoked",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "uid",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AttestationNotFound",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "uid",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        }
+      ],
+      "name": "NotIssuer",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroRecipient",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "uid",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "issuer",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "data",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "AttestationCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "uid",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "issuer",
+          "type": "address"
+        }
+      ],
+      "name": "AttestationRevoked",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "attestationCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "data",
+          "type": "string"
+        }
+      ],
+      "name": "createAttestation",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "uid",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "uid",
+          "type": "bytes32"
+        }
+      ],
+      "name": "exists",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "uid",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getAttestation",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "issuer",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "data",
+              "type": "string"
+            },
+            {
+              "internalType": "uint64",
+              "name": "blockNumber",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "timestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bool",
+              "name": "revoked",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct AttestationRegistry.Attestation",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "uid",
+          "type": "bytes32"
+        }
+      ],
+      "name": "revokeAttestation",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b506108b08061001f6000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c806338a699a41461005c5780634d5e1da61461009c57806381cad903146100b1578063a15b9321146100d2578063a3112a64146100db575b600080fd5b61008761006a366004610527565b6000908152602081905260409020546001600160a01b0316151590565b60405190151581526020015b60405180910390f35b6100af6100aa366004610527565b6100fb565b005b6100c46100bf366004610540565b6101e2565b604051908152602001610093565b6100c460015481565b6100ee6100e9366004610527565b6103c1565b60405161009391906105d3565b600081815260208190526040902080546001600160a01b0316610139576040516301fb6dd160e01b8152600481018390526024015b60405180910390fd5b80546001600160a01b0316331461016c5760405163d4695c2160e01b815260048101839052336024820152604401610130565b6003810154600160801b900460ff161561019c576040516390315de160e01b815260048101839052602401610130565b60038101805460ff60801b1916600160801b179055604051339083907f59d1b98a5da8bbc1db92f7d8d2e21c3067da65edbe08f4ae23df11487ee4c8b090600090a35050565b60006001600160a01b03841661020b5760405163d27b444360e01b815260040160405180910390fd5b60015460405161022791339187918791879143916020016106b6565b60408051601f198184030181528282528051602091820120600180548101905560c0840183523384526001600160a01b038816848301528251601f870183900483028101830184528681529094509183019190869086908190840183828082843760009201829052509385525050504367ffffffffffffffff90811660208085019190915242909116604080850191909152606090930182905284825281815290829020835181546001600160a01b03199081166001600160a01b039283161783559285015160018301805490941691161790915590820151600282019061030f9082610797565b50606082015160039091018054608084015160a0909401511515600160801b0260ff60801b1967ffffffffffffffff958616600160401b026fffffffffffffffffffffffffffffffff19909316959094169490941717919091169190911790556040516001600160a01b03851690339083907f409e32588db557f9e668ce7ff1977a4f8768ab109798aacea6fed56c05495478906103b290889088904390610856565b60405180910390a49392505050565b6040805160c08101825260008082526020820181905260609282018390529181018290526080810182905260a0810191909152600082815260208181526040808320815160c08101835281546001600160a01b03908116825260018301541693810193909352600281018054919284019161043b9061070e565b80601f01602080910402602001604051908101604052809291908181526020018280546104679061070e565b80156104b45780601f10610489576101008083540402835291602001916104b4565b820191906000526020600020905b81548152906001019060200180831161049757829003601f168201915b50505091835250506003919091015467ffffffffffffffff8082166020840152600160401b8204166040830152600160801b900460ff16151560609091015280519091506001600160a01b0316610521576040516301fb6dd160e01b815260048101849052602401610130565b92915050565b60006020828403121561053957600080fd5b5035919050565b60008060006040848603121561055557600080fd5b83356001600160a01b038116811461056c57600080fd5b9250602084013567ffffffffffffffff81111561058857600080fd5b8401601f8101861361059957600080fd5b803567ffffffffffffffff8111156105b057600080fd5b8660208284010111156105c257600080fd5b939660209190910195509293505050565b6020815260018060a01b03825116602082015260018060a01b0360208301511660408201526000604083015160c0606084015280518060e085015260005b8181101561062f576020818401810151610100878401015201610611565b5060008482016101000152606085015167ffffffffffffffff811660808601529150608085015167ffffffffffffffff811660a0860152915060a085015180151560c08601529150601f01601f191692909201610100019392505050565b81835281816020850137506000828201602090810191909152601f909101601f19169091010190565b6001600160a01b0387811682528616602082015260a0604082018190526000906106e3908301868861068d565b60608301949094525060800152949350505050565b634e487b7160e01b600052604160045260246000fd5b600181811c9082168061072257607f821691505b60208210810361074257634e487b7160e01b600052602260045260246000fd5b50919050565b601f82111561079257806000526020600020601f840160051c8101602085101561076f5750805b601f840160051c820191505b8181101561078f576000815560010161077b565b50505b505050565b815167ffffffffffffffff8111156107b1576107b16106f8565b6107c5816107bf845461070e565b84610748565b6020601f8211600181146107f957600083156107e15750848201515b600019600385901b1c1916600184901b17845561078f565b600084815260208120601f198516915b828110156108295787850151825560209485019460019092019101610809565b50848210156108475786840151600019600387901b60f8161c191681555b50505050600190811b01905550565b60408152600061086a60408301858761068d565b905082602083015294935050505056fea2646970667358221220b33115642c7c6158e59fc00658654d5c9640b71b9efae7849b4d473f9c77158764736f6c634300081c0033"
+}

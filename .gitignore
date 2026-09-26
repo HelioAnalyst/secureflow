@@ -1,0 +1,41 @@
+# --- Secrets: the reason this file exists ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Local deployment records (addresses on your own chains) ---
+deployments/
+contracts/contract_address.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+
+# --- Legacy Solidity build output ---
+.build/
+output.txt
+
+# --- Caches / editors / OS ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Private handover notes (not for the public repo) ---
+SECUREFLOW_BRIEF.md
+
+# --- Backup of the pre-rewrite code ---
+legacy_2025_backup.tgz

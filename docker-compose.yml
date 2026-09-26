@@ -1,0 +1,57 @@
+# Full stack: local chain -> contract deployment -> API.
+#
+#   docker compose up --build
+#   python -m secureflow.demo --url http://localhost:8000
+#
+# The private key below is Anvil's well-known dev account #0. It is public,
+# it only exists on this throwaway local chain, and must never hold real funds.
+
+x-chain-env: &chain-env
+  ETH_RPC_URL: http://chain:8545
+  ETH_PRIVATE_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+  SECUREFLOW_DEPLOYMENT_FILE: /deployments/local.json
+
+services:
+  chain:
+    image: ghcr.io/foundry-rs/foundry:stable
+    entrypoint: ["anvil", "--host", "0.0.0.0", "--port", "8545", "--chain-id", "31337"]
+    ports:
+      - "8545:8545"
+    healthcheck:
+      test: ["CMD", "cast", "block-number", "--rpc-url", "http://localhost:8545"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  deploy:
+    build: .
+    command: ["python", "-m", "secureflow.deploy"]
+    environment: *chain-env
+    volumes:
+      - deployments:/deployments
+    depends_on:
+      chain:
+        condition: service_healthy
+
+  api:
+    build: .
+    environment:
+      <<: *chain-env
+      SECUREFLOW_BACKEND: web3
+      # Demo-only key. Generate your own with: python -m secureflow.crypto
+      SECUREFLOW_ENCRYPTION_KEY: "ZGVtby1vbmx5LWtleS1kby1ub3QtdXNlLWluLXByb2Q="
+    volumes:
+      - deployments:/deployments:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      deploy:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  deployments:

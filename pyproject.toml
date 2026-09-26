@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "secureflow"
+version = "1.0.0"
+description = "FastAPI service for issuing, verifying and revoking attestations on an Ethereum smart contract."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Helio" }]
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7,<3",
+    "web3>=7.6,<8",
+    "cryptography>=43",
+    "python-dotenv>=1.0",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "web3[tester]>=7.6,<8",
+    "pytest>=8",
+    "ruff>=0.6",
+]
+compile = ["py-solc-x>=2.0"]
+
+[tool.setuptools]
+packages = ["secureflow", "secureflow.ledger"]
+
+[tool.setuptools.package-data]
+secureflow = ["AttestationRegistry.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
